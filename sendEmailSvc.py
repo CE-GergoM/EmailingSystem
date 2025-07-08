@@ -128,10 +128,10 @@ class MySVC(AppSvc):
         smtp_server = settingsINI['SMTPSettings']['server']
         smtp_port = settingsINI['SMTPSettings']['port']
 
-        live = Server('Live','[CE-AZ-UK-S-PRIO\PRI]', ['base'], 'https://priority.clarksonevans.co.uk/', settingsINI['LIVE']['server'],settingsINI['LIVE']['credentials'])
-        dev = Server('Dev','[CE-AZ-UK-S-PRIO\DEV]', ['solw1'], 'https://prioritydev.clarksonevans.co.uk/', settingsINI['DEV']['server'],settingsINI['DEV']['credentials'])
-        test = Server('Test','[CE-AZ-UK-S-PRIO\TST]', ['solw6'], 'https://prioritytest.clarksonevans.co.uk/', settingsINI['TEST']['server'],settingsINI['TEST']['credentials'])
-        servers = [live, dev, test]
+        live = Server('Live','[CE-AZ-UK-S-PRIO\\PRI]', ['base'], 'https://priority.clarksonevans.co.uk/', settingsINI['LIVE']['server'],settingsINI['LIVE']['credentials'])
+        dev = Server('Dev','[CE-AZ-UK-S-PRIO\\DEV]', ['test'], 'https://prioritydev.clarksonevans.co.uk/', settingsINI['DEV']['server'],settingsINI['DEV']['credentials'])
+        test = Server('Test','[CE-AZ-UK-S-PRIO\\TST]', ['base', 'test'], 'https://prioritytest.clarksonevans.co.uk/', settingsINI['TEST']['server'],settingsINI['TEST']['credentials'])
+        servers = [live, test, dev]
         for server in servers:
             for company in server.companies:
                 #Connect to Database
