@@ -71,20 +71,28 @@ This step inserts the core email data into the ZGEM_EMAILING table:
 If `USE_MANUAL_EMAILBODY` is not 'Y', the system will use the body from the email template.
 
 #### Option 2: Manual Email Body
-If `USE_MANUAL_EMAILBODY` is 'Y', you must insert the body manually into the ZGEM_EMAILBODY table:
+If `USE_MANUAL_EMAILBODY` is 'Y', you must insert the body manually using the INSERTLINE procedure:
 
 ```sql
-INSERT INTO ZGEM_EMAILBODY (EMAILID, TEXTLINE, TEXTORD, TEXT)
-VALUES (:EMAILID, 1, 1, '<p>Dear <TL_SNAME></p>');
+/*Body*/
+:EMAIL_TEXT_LINE = '<p>Dear <RECIPIENT_NAME></p>';
+#INCLUDE ZGEM_EMAILBODY/INSERTLINE
+:EMAIL_TEXT_LINE = '<p>There is an emergency at <SITE> <PLOT></p>';
+#INCLUDE ZGEM_EMAILBODY/INSERTLINE
+:EMAIL_TEXT_LINE = '<p>Please see below the emergencies.</p>';
+#INCLUDE ZGEM_EMAILBODY/INSERTLINE
 ```
 
-Parameters:
-- `EMAILID`: The unique email identifier
-- `TEXTLINE`: Line number
-- `TEXTORD`: Order within the line
-- `TEXT`: The content of the email body
+The INSERTLINE procedure automatically handles line numbering by:
+- Finding the maximum existing line number for the email
+- Inserting the new line with the next sequential line number
+- Using the same value for both `TEXTLINE` and `TEXTORD`
 
-Note: Variables (like `<TL_SNAME>`) can be used in manual email bodies for personalization.
+**Required inputs for INSERTLINE:**
+- `EMAILID`: The unique email identifier
+- `EMAIL_TEXT_LINE`: The content to be added to the email body
+
+Note: Variables (like `<RECIPIENT_NAME>`, `<SITE>`, `<PLOT>`) can be used in manual email bodies for personalization and will be replaced with actual values when the email is processed.
 
 ### 4. Setting Email Variables
 
