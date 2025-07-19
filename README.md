@@ -47,16 +47,16 @@ INSERT INTO ZGEM_EMAILING (EMAILID
 , TEMPLATE_NUM
 , TYPE
 , USE_MANUAL_EMAILBODY)
-SELECT :EMAILID,
-       SQL.DATE,
-       'Clarkson Evans Audits',
-       'priority@clarksonevans.co.uk',
-       'Recipient@email.com',
-       STRCAT(:VAR1, 'subject', :VAR2),
-       :TEMPLATE_EXEC,
-       :TEMPLATE_NUM,
-       'Example Email',
-       (:IS_MANUAL_EMAIL_BODY = 'Y' ? 'Y' : '')
+SELECT :EMAILID
+, SQL.DATE
+, 'Clarkson Evans Audits'
+, 'priority@clarksonevans.co.uk'
+, 'Recipient@email.com'
+, STRCAT(:VAR1, 'subject', :VAR2)
+, :TEMPLATE_EXEC
+, :TEMPLATE_NUM
+, 'Example Email'
+, (:IS_MANUAL_EMAIL_BODY = 'Y' ? 'Y' : '')
 FROM DUMMY;
 ```
 
