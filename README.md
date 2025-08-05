@@ -1,15 +1,18 @@
-# Email System Documentation
+# Email System Developer Documentation
 
 ## Overview
-This document explains how to insert emails into the ERP system's emailing tables. The system stores email information in database tables and a Python service processes these tables to send emails and mark them as sent.
+This document explains how to programmatically insert emails into the ERP system's emailing tables. The system stores email information in database tables and a Python service processes these tables to send emails and mark them as sent.
+
+**Note:** Before using this system, ensure that a superuser has configured the email system settings. See the Email System Setup Guide for configuration details.
 
 ## Process Flow
 1. Build the email (get template, generate email ID)
 2. Insert email details into ZGEM_EMAILING table
-3. Add email body (either template-based or manual)
-4. Set email variables for personalization
-5. Add attachments (reference only or saved copy)
-6. Send the email
+3. Add recipients to ZGEM_EMAIL_RECIPIENT table
+4. Add email body (either template-based or manual)
+5. Set email variables for personalization
+6. Add attachments (reference only or saved copy)
+7. Send the email
 
 ## Detailed Steps
 
@@ -41,7 +44,6 @@ INSERT INTO ZGEM_EMAILING (EMAILID
 , CURDATE
 , SENDER_NAME
 , SENDER_EMAIL
-, RECIPIENT_EMAIL
 , SUBJECT
 , TEMPLATE_EXEC
 , TEMPLATE_NUM
@@ -51,7 +53,6 @@ SELECT :EMAILID
 , SQL.DATE
 , 'Clarkson Evans Audits'
 , 'priority@clarksonevans.co.uk'
-, 'Recipient@email.com'
 , STRCAT(:VAR1, 'subject', :VAR2)
 , :TEMPLATE_EXEC
 , :TEMPLATE_NUM
@@ -65,7 +66,6 @@ This step inserts the core email data into the ZGEM_EMAILING table:
 - `CURDATE`: Current date
 - `SENDER_NAME`: Display name of the sender
 - `SENDER_EMAIL`: Email address of the sender
-- `RECIPIENT_EMAIL`: Email address of the recipient
 - `SUBJECT`: Subject line of the email (can be concatenated from variables)
 - `TEMPLATE_EXEC` and `TEMPLATE_NUM`: Template identifiers
 - `TYPE`: Email type category
@@ -73,7 +73,35 @@ This step inserts the core email data into the ZGEM_EMAILING table:
   - 'Y': Use manual email body
   - '' (empty): Use template body
 
-### 3. Adding Email Body
+**Note:** The `RECIPIENT_EMAIL` field is now deprecated. Use the ZGEM_EMAIL_RECIPIENT table instead for defining recipients.
+
+### 3. Adding Recipients
+
+```sql
+INSERT INTO ZGEM_EMAIL_RECIPIENT (EMAILID, EMAIL, TYPE)
+SELECT :EMAILID, 'primary@example.com', 'To'
+FROM DUMMY;
+
+INSERT INTO ZGEM_EMAIL_RECIPIENT (EMAILID, EMAIL, TYPE)
+SELECT :EMAILID, 'cc@example.com', 'Cc'
+FROM DUMMY;
+
+INSERT INTO ZGEM_EMAIL_RECIPIENT (EMAILID, EMAIL, TYPE)
+SELECT :EMAILID, 'bcc@example.com', 'Bcc'
+FROM DUMMY;
+```
+
+This step adds recipients to the email:
+- `EMAILID`: The unique email identifier
+- `EMAIL`: The recipient's email address
+- `TYPE`: The recipient type:
+  - 'To': Primary recipients
+  - 'Cc': Carbon copy recipients
+  - 'Bcc': Blind carbon copy recipients
+
+**Important:** Recipients may be filtered by the recipient whitelist if enabled by system administrators. Emails to non-whitelisted recipients will be blocked when the whitelist is active.
+
+### 4. Adding Email Body
 
 #### Option 1: Template-Based Body
 If `USE_MANUAL_EMAILBODY` is not 'Y', the system will use the body from the email template.
@@ -102,7 +130,7 @@ The INSERTLINE procedure automatically handles line numbering by:
 
 Note: Variables (like `<RECIPIENT_NAME>`, `<SITE>`, `<PLOT>`) can be used in manual email bodies for personalization and will be replaced with actual values when the email is processed.
 
-### 4. Setting Email Variables
+### 5. Setting Email Variables
 
 ```sql
 :VARIABLENAME = '<TL_SNAME>';
@@ -115,7 +143,7 @@ This step adds variables for personalization:
 - `VARIABLENAME`: The placeholder in the email template (e.g., `<TL_SNAME>`)
 - `VALUE`: The actual value to replace the placeholder
 
-### 5. Adding Attachments
+### 6. Adding Attachments
 
 #### Option 1: Reference Only
 ```sql
@@ -152,7 +180,7 @@ LABEL 13112410529;
 
 This option makes a copy of the attachment at the time of email creation. If the original file changes later, it won't affect the copy attached to the email. This method preserves email history by keeping an exact copy of what was sent.
 
-### 6. Sending the Email
+### 7. Sending the Email
 
 ```sql
 :RUN_BY = 'ZCLA_FIXACTSTAT/ZGEM_SENDIAUDITEMAIL';
@@ -171,8 +199,24 @@ This step marks the email as ready to send by setting `READY_TO_SEND = 'Y'`. The
 1. **Reference Only**: Links to the original file (changes to the file will affect the email)
 2. **Save Copy**: Makes a copy of the file at the time of email creation (preserves email history)
 
+### Recipient Types
+- **To**: Primary recipients who should take action on the email
+- **Cc**: Recipients who should be aware of the email but are not primary recipients
+- **Bcc**: Recipients who receive the email without other recipients knowing
+
 ## Tables Used
 - `ZGEM_EMAILING`: Main email information
+- `ZGEM_EMAIL_RECIPIENT`: Email recipients (To/Cc/Bcc)
 - `ZGEM_EMAILBODY`: Email body content (for manual body)
 - `ZGEM_EMAILVARIABLES`: Variables for personalization
 - `ZGEM_EMAILATTCHMNTS`: Email attachments
+
+## Important Notes
+
+1. **System Activation**: The emailing system must be activated by a superuser in the Companies form before emails can be sent.
+
+2. **Recipient Filtering**: If the recipient whitelist is enabled, emails will only be sent to whitelisted recipients. This is commonly used in testing environments to prevent accidental emails to real users.
+
+3. **Multiple Recipients**: You can add multiple recipients of each type (To, Cc, Bcc) by inserting multiple records into the ZGEM_EMAIL_RECIPIENT table.
+
+4. **Error Handling**: Always implement proper error handling when inserting email data, as constraint violations can occur with duplicate email/recipient combinations.
