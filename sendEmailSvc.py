@@ -269,7 +269,7 @@ class MySVC(AppSvc):
             results = cursor.execute(self.get_whitelisted_recipients(server.server, company))
             results = cursor.fetchall()
             for row in results:
-                whitelisted_emails.append(row[0])
+                whitelisted_emails.append(row[0].lower())
             self.logger.debug("Whitelisted Emails: {}".format(whitelisted_emails))
         
         cursor.close()
@@ -422,7 +422,7 @@ class MySVC(AppSvc):
         sender_name = email[2]
         sender_email = email[3]
         email_recipients = {
-            'To': [email[4]],
+            'To': [email[4].lower()],
             'Cc': [],
             'Bcc': []
         }
@@ -440,7 +440,7 @@ class MySVC(AppSvc):
             email_address = recipient[0]
             recipient_type = recipient[1]
             if recipient_type in email_recipients:
-                email_recipients[recipient_type].append(email_address)
+                email_recipients[recipient_type].append(email_address.lower())
         
         # Apply whitelist filter
         if recipient_whitelist_filter:
