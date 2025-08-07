@@ -344,6 +344,11 @@ class MySVC(AppSvc):
     
     def send_it_notification(self, sender_email):
         """Send notification to IT about send-as permission setup"""
+        # Check if sender email contains the required domain
+        if '@clarksonevans.co.uk' not in sender_email.lower():
+            #IT is not able to give send as permissions outsite our domain
+            return  # Exit early if not from the allowed domain
+        
         try:
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as smtp_server:
                 send_as_message = MIMEMultipart('alternative')
