@@ -68,14 +68,14 @@ This step inserts the core email data into the ZGEM_EMAILING table:
 - `CURDATE`: Current date
 - `SENDER_NAME`: Display name of the sender
 - `SENDER_EMAIL`: Email address of the sender
+- `RECIPIENT_EMAIL`: Email address of the recipient
 - `SUBJECT`: Subject line of the email (can be concatenated from variables)
 - `TEMPLATE_EXEC` and `TEMPLATE_NUM`: Template identifiers
 - `TYPE`: Email type category
 - `USE_MANUAL_EMAILBODY`: Controls whether to use template or manual body:
   - 'Y': Use manual email body
   - '' (empty): Use template body
-
-**Note:** The `RECIPIENT_EMAIL` field is now deprecated. Use the ZGEM_EMAIL_RECIPIENT table instead for defining recipients.
+ 
 
 ### 3. Adding Recipients
 
@@ -84,13 +84,14 @@ INSERT INTO ZGEM_EMAIL_RECIPIENT (EMAILID, EMAIL, TYPE)
 SELECT :EMAILID, 'primary@example.com', 'To'
 FROM DUMMY;
 
-INSERT INTO ZGEM_EMAIL_RECIPIENT (EMAILID, EMAIL, TYPE)
-SELECT :EMAILID, 'cc@example.com', 'Cc'
-FROM DUMMY;
+:RECIPIENT_EMAIL = 'to@example.com';
+#INCLUDE ZGEM_EMAIL_RECIPIENT/TO
 
-INSERT INTO ZGEM_EMAIL_RECIPIENT (EMAILID, EMAIL, TYPE)
-SELECT :EMAILID, 'bcc@example.com', 'Bcc'
-FROM DUMMY;
+:RECIPIENT_EMAIL = 'cc@example.com';
+#INCLUDE ZGEM_EMAIL_RECIPIENT/CC
+
+:RECIPIENT_EMAIL = 'bcc@example.com';
+#INCLUDE ZGEM_EMAIL_RECIPIENT/BCC
 ```
 
 This step adds recipients to the email:
@@ -101,6 +102,7 @@ This step adds recipients to the email:
   - 'Cc': Carbon copy recipients
   - 'Bcc': Blind carbon copy recipients
 
+**Important:** The `ZGEM_EMAILING.RECIPIENT_EMAIL` field still needs to populated with an email address. The ZGEM_EMAIL_RECIPIENT include triggers will be updated in the future to not add the recipient if they are already in the `ZGEM_EMAILING.RECIPIENT_EMAIL` field.
 **Important:** Recipients may be filtered by the recipient whitelist if enabled by system administrators. Emails to non-whitelisted recipients will be blocked when the whitelist is active.
 
 ### 4. Adding Email Body
