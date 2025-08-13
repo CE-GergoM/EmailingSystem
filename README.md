@@ -102,8 +102,9 @@ This step adds recipients to the email:
   - 'Cc': Carbon copy recipients
   - 'Bcc': Blind carbon copy recipients
 
-**Important:** The `ZGEM_EMAILING.RECIPIENT_EMAIL` field still must be populated with an email address. The ZGEM_EMAIL_RECIPIENT include triggers might be updated in the future to not add the recipient if they are already in the `ZGEM_EMAILING.RECIPIENT_EMAIL` field.
-**Important:** Recipients may be filtered by the recipient whitelist if enabled by system administrators. Emails to non-whitelisted recipients will be blocked when the whitelist is active.
+**Important:** The `ZGEM_EMAILING.RECIPIENT_EMAIL` field still must be populated with an email address.<br>
+**Important:** Recipients may be filtered by the recipient whitelist if enabled by system administrators. Emails to non-whitelisted recipients will be blocked when the whitelist is active.<br>
+**Note:** The ZGEM_EMAIL_RECIPIENT include triggers might be updated in the future to not add the recipient if they are already in the `ZGEM_EMAILING.RECIPIENT_EMAIL` field.
 
 ### 4. Adding Email Body
 
